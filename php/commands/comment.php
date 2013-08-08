@@ -180,7 +180,9 @@ class Comment_Command extends WP_CLI_Command {
 	 * @synopsis <id>
 	 */
 	public function approve( $args, $assoc_args ) {
-		$this->set_status( $args, 'approve', "Approved" );
+		if( $this->_comment_exist( $args ) ) {
+			$this->set_status( $args, 'approve', "Approved" );
+		}
 	}
 
 	/**
@@ -198,7 +200,9 @@ class Comment_Command extends WP_CLI_Command {
 	 * @synopsis <id>
 	 */
 	public function unapprove( $args, $assoc_args ) {
-		$this->set_status( $args, 'hold', "Unapproved" );
+		if( $this->_comment_exist( $args ) ) {
+			$this->set_status( $args, 'hold', "Unapproved" );
+		}
 	}
 
 	/**
@@ -295,6 +299,24 @@ class Comment_Command extends WP_CLI_Command {
 		foreach ( $keys as $key ) {
 			WP_CLI::line( str_pad( "$key:", 23 ) . $comment->$key );
 		}
+	}
+	
+	/**
+	 * Helper function for checking if a comment exists.
+	 * 
+	 * @param array $args arguments array with first element - comment ID.
+	 * @return boolean true on success, or exit(1) on failure.
+	 */
+	private function _comment_exist( $args ) {
+		$comment_id = (int) $args[0];
+		$comment = get_comment( $comment_id );
+		
+		if( is_null( $comment ) ) {
+			WP_CLI::error( "Comment with ID $args[0] does not exist." );
+			exit( 1 );
+		}
+
+		return true;
 	}
 }
 
